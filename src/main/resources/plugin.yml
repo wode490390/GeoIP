@@ -1,0 +1,18 @@
+main: cn.wode490390.nukkit.geoip.GeoIP
+name: "GeoIP"
+description: "GeoIP provides an approximate lookup of where your players come from, based on their public IP and public geographical databases."
+author: "wode490390"
+website: "http://wode490390.cn/"
+version: "${pom.version}"
+api: ["1.0.0"]
+load: POSTWORLD
+permissions:
+  geoip.hide:
+    description: "Allows player to hide player's country and city from people who have permission geoip.show"
+    default: false
+  geoip.show:
+    description: "Shows the GeoIP location of a player."
+    default: op
+  geoip.show.fullip:
+    description: "Shows the full ip address of a player."
+    default: false

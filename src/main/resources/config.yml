@@ -1,0 +1,15 @@
+database:
+  show-cities: false
+  download-if-missing: true
+  # Url for country
+  download-url: "https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz"
+  # Url for cities
+  download-url-city: "https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz"
+  update:
+    enable: true
+    by-every-x-days: 30
+show-on-login: true
+# "enable-locale" enables locale on geolocation display.
+enable-locale: true
+# Not all languages are supported. See https://dev.maxmind.com/geoip/geoip2/web-services/#Languages
+locale: en
