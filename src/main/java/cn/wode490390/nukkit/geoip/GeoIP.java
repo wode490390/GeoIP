@@ -3,11 +3,15 @@ package cn.wode490390.nukkit.geoip;
 import cn.nukkit.Player;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
+import cn.wode490390.nukkit.geoip.command.GeoIPCommand;
+import cn.wode490390.nukkit.geoip.util.LZMALib;
+import cn.wode490390.nukkit.geoip.util.MetricsLite;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.ice.tar.TarEntry;
-import com.ice.tar.TarInputStream;
 import com.maxmind.geoip2.DatabaseReader;
+
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,25 +23,39 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
+import java.util.UUID;
 
 public class GeoIP extends PluginBase {
 
-    private static final Map<Player, String> cache = Maps.newHashMap();
+    private static final Map<UUID, String> cache = Maps.newHashMap();
 
     /**
      * Querys player's geographical location.
      *
-     * @param palyer
+     * @param uuid
      * @return geographical location or null
      */
-    public static String query(Player palyer) {
-        Preconditions.checkNotNull(palyer, "Player cannot be null");
-        return cache.get(palyer);
+    public static String query(UUID uuid) {
+        Preconditions.checkNotNull(uuid, "UUID cannot be null");
+        return cache.get(uuid);
     }
 
-    static void setGeoLocation(Player palyer, String location) {
-        cache.put(palyer, location);
+    /**
+     * Querys player's geographical location.
+     *
+     * @param player
+     * @return geographical location or null
+     *
+     * @see #query(UUID) 
+     */
+    @Deprecated
+    public static String query(Player player) {
+        Preconditions.checkNotNull(player, "Player cannot be null");
+        return query(player.getUniqueId());
+    }
+
+    static void setGeoLocation(UUID uuid, String location) {
+        cache.put(uuid, location);
     }
 
     Config config;
@@ -46,10 +64,11 @@ public class GeoIP extends PluginBase {
     @Override
     public void onEnable() {
         try {
-            new MetricsLite(this);
-        } catch (Exception ignore) {
+            new MetricsLite(this, 5375);
+        } catch (Throwable ignore) {
 
         }
+
         this.saveDefaultConfig();
         this.config = this.getConfig();
         if (this.config.getBoolean("database.show-cities", false)) {
@@ -94,11 +113,11 @@ public class GeoIP extends PluginBase {
         try {
             String url;
             if (this.config.getBoolean("database.show-cities", false)) {
-                url = this.config.getString("database.download-url-city");
+                url = this.config.getString("database.lzma-download-url-city", "https://cdn.jsdelivr.net/gh/wodeBot/geoipdb@lzma/city.mmdb.lzma");
             } else {
-                url = this.config.getString("database.download-url");
+                url = this.config.getString("database.lzma-download-url", "https://cdn.jsdelivr.net/gh/wodeBot/geoipdb@lzma/country.mmdb.lzma");
             }
-            if (url == null || url.isEmpty()) {
+            if (Strings.isNullOrEmpty(url)) {
                 this.getLogger().warning("GeoIP download url is empty.");
                 return;
             }
@@ -106,33 +125,12 @@ public class GeoIP extends PluginBase {
             URL downloadUrl = new URL(url);
             URLConnection conn = downloadUrl.openConnection();
             conn.setConnectTimeout(10000);
+            conn.setRequestProperty("User-agent", "Mozilla/5.0 (iPad; CPU OS 13_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Mobile/15E148 Safari/604.1");
             conn.connect();
-            InputStream input = conn.getInputStream();
+            InputStream input = new BufferedInputStream(conn.getInputStream());
             OutputStream output = new FileOutputStream(this.databaseFile);
-            byte[] buffer = new byte[2048];
-            if (url.endsWith(".gz")) {
-                input = new GZIPInputStream(input);
-                if (url.endsWith(".tar.gz")) {
-                    // The new GeoIP2 uses tar.gz to pack the db file along with some other txt. So it makes things a bit complicated here.
-                    String filename;
-                    TarInputStream tarInputStream = new TarInputStream(input);
-                    TarEntry entry;
-                    while ((entry = tarInputStream.getNextEntry()) != null) {
-                        if (!entry.isDirectory()) {
-                            filename = entry.getName();
-                            if (filename.substring(filename.length() - 5).equalsIgnoreCase(".mmdb")) {
-                                input = tarInputStream;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            int length = input.read(buffer);
-            while (length >= 0) {
-                output.write(buffer, 0, length);
-                length = input.read(buffer);
-            }
+            LZMALib.decode(input, output);
+            output.flush();
             output.close();
             input.close();
         } catch (MalformedURLException ex) {

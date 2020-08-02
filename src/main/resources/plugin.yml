@@ -6,6 +6,7 @@ website: "http://wode490390.cn/"
 version: "${pom.version}"
 api: ["1.0.0"]
 load: POSTWORLD
+
 permissions:
   geoip.hide:
     description: "Allows player to hide player's country and city from people who have permission geoip.show"

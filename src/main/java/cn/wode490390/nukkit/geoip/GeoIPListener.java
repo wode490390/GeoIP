@@ -84,7 +84,7 @@ public class GeoIPListener implements Listener {
             // GeoIP2 API forced this when address not found in their DB. jar will not complied without this.
             this.plugin.getLogger().warning("Failed to read GeoIP database: " + ex.getLocalizedMessage());
         }
-        GeoIP.setGeoLocation(player, sb.toString());
+        GeoIP.setGeoLocation(player.getUniqueId(), sb.toString());
         if (this.plugin.config.getBoolean("show-on-login", true)) {
             String template = TextFormat.colorize("&6Player &c" + player.getDisplayName() + " &6comes from &c" + sb.toString() + "&6. (IP:&c%ip%&6)");
             String[] ip = player.getAddress().split("\\.");

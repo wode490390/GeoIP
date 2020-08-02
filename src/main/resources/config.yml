@@ -2,12 +2,9 @@ database:
   show-cities: false
   download-if-missing: true
   # Url for country
-  download-url: "https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz"
+  lzma-download-url: "https://cdn.jsdelivr.net/gh/wodeBot/geoipdb@lzma/country.mmdb.lzma"
   # Url for cities
-  download-url-city: "https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz"
-  update:
-    enable: true
-    by-every-x-days: 30
+  lzma-download-url-city: "https://cdn.jsdelivr.net/gh/wodeBot/geoipdb@lzma/city.mmdb.lzma"
 show-on-login: true
 # "enable-locale" enables locale on geolocation display.
 enable-locale: true

@@ -1,4 +1,4 @@
-package cn.wode490390.nukkit.geoip;
+package cn.wode490390.nukkit.geoip.command;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
@@ -10,6 +10,7 @@ import cn.nukkit.command.data.CommandParameter;
 import cn.nukkit.lang.TranslationContainer;
 import cn.nukkit.plugin.Plugin;
 import cn.nukkit.utils.TextFormat;
+import cn.wode490390.nukkit.geoip.GeoIP;
 
 public class GeoIPCommand extends Command implements PluginIdentifiableCommand {
 
@@ -33,7 +34,7 @@ public class GeoIPCommand extends Command implements PluginIdentifiableCommand {
         if (args.length > 0) {
             Player player = Server.getInstance().getPlayer(args[0]);
             if (player != null) {
-                String geoLocation = GeoIP.query(player);
+                String geoLocation = GeoIP.query(player.getUniqueId());
                 if (geoLocation != null) {
                     String[] ip = player.getAddress().split("\\.");
                     try {
